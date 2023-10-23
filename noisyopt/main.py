@@ -187,6 +187,7 @@ def minimizeCompass(func, x0, args=(),
             print('nit %i, Delta %g' % (nit, delta))
         found = False
         np.random.shuffle(generatingset)
+        IncreaseN = False
         for d in generatingset:
             xtest, deltaeff = clip(x, delta*d)
             if deltaeff < floatcompatol:
@@ -219,10 +220,12 @@ def minimizeCompass(func, x0, args=(),
                         print('mid', x)
                 # otherwise increase accuracy of simulation to try to get to significance
                 elif errorcontrol:
-                    funcm.N *= funcmultfactor
-                    if disp:
-                        print('new N %i' % funcm.N)
+                    IncreaseN = True
                     found = True
+            if IncreaseN:
+                funcm.N *= funcmultfactor
+                if disp:
+                    print('new N %i' % funcm.N)
         if callback is not None:
             callback(x)
         if not found:
