@@ -222,10 +222,10 @@ def minimizeCompass(func, x0, args=(),
                 elif errorcontrol:
                     IncreaseN = True
                     found = True
-            if IncreaseN:
-                funcm.N *= funcmultfactor
-                if disp:
-                    print('new N %i' % funcm.N)
+        if IncreaseN:
+            funcm.N *= funcmultfactor
+            if disp:
+                print('new N %i' % funcm.N)
         if callback is not None:
             callback(x)
         if not found:
