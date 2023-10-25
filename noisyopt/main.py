@@ -221,12 +221,33 @@ def minimizeCompass(func, x0, args=(),
                 # otherwise increase accuracy of simulation to try to get to significance
                 elif errorcontrol:
                     IncreaseN += 1
-                    print('deb', IncreaseN, len(generatingset))
-                    # found = True
-        if IncreaseN > len(generatingset)/2: # more than half of the directions did not improve
+        if disp and IncreaseN > 0:
+            print('Not enough statistics in', IncreaseN, 'of', len(generatingset), 'directions')
+        if IncreaseN > 0:  # len(generatingset)/2:  # more than half of the directions did not improve
             funcm.N *= funcmultfactor
             found = True
             if disp:
+                # check if any of the directions are free at the optimum
+                delta = deltatol
+                free = np.zeros(x.shape, dtype=bool)
+                for d in generatingset:
+                    dim = np.argmax(np.abs(d))
+                    xtest, deltaeff = clip(x, delta*d)
+                    if deltaeff < deltatol*np.sum(np.abs(d))-floatcompatol: # do not consider as free for boundary steps
+                        continue
+                    if not free[dim] and (((not errorcontrol and funcm(xtest) - feps < funcm(x)) or
+                        (errorcontrol and funcm.test(xtest, x, type_='equality', alpha=alpha)
+                            and (funcm.diffse(xtest, x) < feps)))):
+                        free[dim] = True
+
+                reskwargs = dict(x=x, nit=nit, nfev=funcm.nev, free=free)
+                if errorcontrol:
+                    f, funse = funcm(x)
+                    res = OptimizeResult(fun=f, funse=funse, **reskwargs)
+                else:
+                    f = funcm(x)
+                res = OptimizeResult(fun=f, **reskwargs)
+                print('best at the moment', res)
                 print('new N %i' % funcm.N)
         if callback is not None:
             callback(x)
@@ -352,7 +373,7 @@ def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
             x = project(x - ak*grad)
         # print status updates every 100th iteration if disp=True
         if disp and (k % max([1, niter//100])) == 0:
-            print(x)
+            print(k, x, funcf(x))
         if callback is not None:
             callback(x)
     message = 'terminated after reaching max number of iterations'
