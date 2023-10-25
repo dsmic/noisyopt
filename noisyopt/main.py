@@ -373,7 +373,7 @@ def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
             x = project(x - ak*grad)
         # print status updates every 100th iteration if disp=True
         if disp and (k % max([1, niter//100])) == 0:
-            print(k, x, funcf(x))
+            print(k, x)  # , funcf(x))
         if callback is not None:
             callback(x)
     message = 'terminated after reaching max number of iterations'
